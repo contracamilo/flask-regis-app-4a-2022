@@ -1,1 +1,3 @@
-# flask-regis-app-4a-2022
+# Ejercicio Académico Backend - App registraduria
+
+Arquitectura de microservicios - Python Flask App
