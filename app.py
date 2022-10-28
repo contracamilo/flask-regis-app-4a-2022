@@ -1,6 +1,4 @@
-from flask import Flask
-from flask import jsonify
-from flask import request
+from flask import Flask, jsonify, request, redirect, url_for
 from flask_cors import CORS
 import json
 from waitress import serve
@@ -15,28 +13,48 @@ def load_config_file():
         data = json.load(file)
     return data
 
+'''
+**** CRUD mesas de votacion ****
+'''
 
-@app.route('/', methods=["GET"])
-def test():
-    response = {
-        "user": "camilo"
-    }
-    return jsonify(response)
-
-
-@app.route("/mesas", methods=['GET'])
-def get_tables():
+@app.route("/mesas", methods=['GET', 'POST'])
+def get_create_tables():
     table = TableController.index()
+    all_tables = json.dumps(table, default=str)
+
+    if request.method == 'POST':
+        new_table = json.loads(request.data)
+
+        if new_table["table_number"] and new_table["signed_docs"]:
+            table = TableController.create(data=new_table)
+        return jsonify(table)
+
+    return json.loads(all_tables)
+
+
+@app.route("/mesas/<table_number>", methods=['GET'])
+def get_table_by_number(table_number):
+    table = TableController.get_by_table(table_number)
+    table = json.dumps(table, default=str)
+    return json.loads(table)
+
+
+@app.route("/mesas/borrar", methods=['DELETE'])
+def delete_tables():
+    deleted_table = json.loads(request.data)
+    table = TableController.delete(deleted_table["table_number"])
     return jsonify(table)
 
 
+@app.route("/mesas/editar", methods=['PUT'])
+def edit_tables():
+    edited_table = json.loads(request.data)
+    table_number = edited_table["table_number"]
+    signed_docs = edited_table["signed_docs"]
 
-'''
-@app.route("/estudiantes/<string:id>", methods=['DELETE'])
-def eliminarEstudiante(id):
-    json = miControladorEstudiante.delete(id)
-    return jsonify(json)
-'''
+    table = TableController.edit(table_number, signed_docs)
+    return jsonify(table)
+
 
 if __name__ == '__main__':
     dataConfig = load_config_file()
